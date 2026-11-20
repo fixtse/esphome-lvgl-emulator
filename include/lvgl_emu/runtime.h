@@ -48,9 +48,12 @@ struct Args {
 // Loads a TrueType font with FreeType at a pixel size (cached), as ESPHome's
 // font component renders it. Returns lv_font_montserrat_14 on failure.
 const lv_font_t *ttf(const std::string &path, int size);
-// Rasterises an SVG (rsvg-convert) or loads a PNG at the given size and
-// returns an LVGL image source (cached). nullptr on failure.
+// Returns an LVGL image source for an SVG, PNG or JPEG resized to width x
+// height (like ESPHome's image `resize:`), rasterised with rsvg-convert and
+// cached. nullptr on failure.
 const void *svg(const std::string &path, int width, int height = 0);
+inline const void *image(const std::string &path, int width, int height = 0) { return svg(path, width, height); }
+// A PNG at its own size.
 const void *png(const std::string &path);
 // Runs timers and animations for `ms` of emulated time, then redraws fully.
 void settle(uint32_t ms = 2000);

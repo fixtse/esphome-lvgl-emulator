@@ -78,8 +78,9 @@ Command line, handled by the runtime: `--out DIR`, `--sdl`, `--interval MS`
 
 Helpers for apps (`include/lvgl_emu/runtime.h`):
 - `ttf(path, size)`
-- `svg(path, w, h)`
-- `png(path)`
+- `image(path, w, h)`: SVG, PNG or JPEG resized like ESPHome's `image:` `resize:`
+- `svg(path, w, h)` (the same)
+- `png(path)` (native size)
 - `settle(ms)`
 - `write_png(path)`
 - `now_ms()`

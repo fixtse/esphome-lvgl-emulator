@@ -62,8 +62,28 @@ const void *svg(const std::string &path, int width, int height) {
   const std::string key = path + "@" + std::to_string(width) + "x" + std::to_string(height);
   if (auto it = image_cache.find(key); it != image_cache.end()) return it->second.empty() ? nullptr : it->second.c_str();
   const std::string file = cache_dir + "/" + std::to_string(image_cache.size()) + ".png";
+  std::string source = path;
+  // Raster images (PNG/JPEG) are resized the same way, through an SVG wrapper.
+  const auto ext = path.substr(path.find_last_of('.') + 1);
+  if (ext == "png" || ext == "jpg" || ext == "jpeg") {
+    const std::string bytes = read_file(path);
+    static const char *t = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    std::string b64;
+    for (size_t i = 0; i < bytes.size(); i += 3) {
+      const uint32_t v = uint8_t(bytes[i]) << 16 | (i + 1 < bytes.size() ? uint8_t(bytes[i + 1]) << 8 : 0) |
+                         (i + 2 < bytes.size() ? uint8_t(bytes[i + 2]) : 0);
+      b64 += t[v >> 18 & 63]; b64 += t[v >> 12 & 63];
+      b64 += i + 1 < bytes.size() ? t[v >> 6 & 63] : '='; b64 += i + 2 < bytes.size() ? t[v & 63] : '=';
+    }
+    source = file + ".svg";
+    std::ofstream wrapper(source);
+    wrapper << "<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='" << width
+            << "' height='" << height << "'><image width='" << width << "' height='" << height
+            << "' preserveAspectRatio='none' xlink:href='data:image/" << (ext == "png" ? "png" : "jpeg") << ";base64," << b64
+            << "'/></svg>";
+  }
   const std::string cmd = "rsvg-convert -w " + std::to_string(width) + " -h " + std::to_string(height) + " -o '" + file +
-                          "' '" + path + "' 2>/dev/null";
+                          "' '" + source + "' 2>/dev/null";
   if (std::system(cmd.c_str()) != 0) {
     std::fprintf(stderr, "lvgl_emu: cannot rasterise %s\n", path.c_str());
     image_cache[key] = "";
