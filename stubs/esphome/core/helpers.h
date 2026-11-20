@@ -80,7 +80,8 @@ class StringRef {
  private:
   std::string s_;
 };
-inline std::string get_mac_address() { return "000000000000";  // Fixed, so renders are reproducible. }
+// Fixed, so renders are reproducible.
+inline std::string get_mac_address() { return "000000000000"; }
 inline std::string str_sprintf(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 inline std::string str_sprintf(const char *fmt, ...) {
   char buf[512];
